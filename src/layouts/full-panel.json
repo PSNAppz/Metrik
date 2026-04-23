@@ -1,0 +1,9 @@
+[
+  { "type": "gauge",     "metricKey": "gpu.usage",  "label": "GPU",             "col": 1,     "row": 1 },
+  { "type": "card",      "metricKey": "gpu.temp",   "label": "TEMP",            "col": 2,     "row": 1 },
+  { "type": "card",      "metricKey": "gpu.vram",   "label": "VRAM",            "col": 3,     "row": 1 },
+  { "type": "card",      "metricKey": "cpu.usage",  "label": "CPU",             "col": 2,     "row": 2 },
+  { "type": "card",      "metricKey": "ram",         "label": "RAM",            "col": 3,     "row": 2 },
+  { "type": "sparkline", "metricKey": "gpu.usage",  "label": "GPU \u2014 LAST 60s",  "col": "1-3", "row": 3 },
+  { "type": "clock",     "metricKey": null,          "label": "",               "col": "right","row": "header" }
+]

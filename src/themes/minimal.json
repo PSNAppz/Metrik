@@ -1,0 +1,16 @@
+{
+  "name": "Minimal",
+  "colors": {
+    "primary": "#FFFFFF",
+    "secondary": "#888888",
+    "accent": "#CCCCCC",
+    "danger": "#FF6B6B",
+    "text": "#FFFFFF",
+    "background": "#000000"
+  },
+  "glow": { "intensity": 0, "enabled": false },
+  "background": {
+    "type": "solid",
+    "color": "#000000"
+  }
+}

@@ -1,0 +1,6 @@
+[
+  { "type": "gauge",     "metricKey": "gpu.usage",  "label": "GPU",  "col": 1,      "row": 1 },
+  { "type": "card",      "metricKey": "gpu.temp",   "label": "TEMP", "col": 2,      "row": 1 },
+  { "type": "card",      "metricKey": "gpu.vram",   "label": "VRAM", "col": 3,      "row": 1 },
+  { "type": "clock",     "metricKey": null,          "label": "",    "col": "right", "row": "header" }
+]

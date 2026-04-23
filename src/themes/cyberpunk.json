@@ -1,0 +1,18 @@
+{
+  "name": "Cyberpunk",
+  "colors": {
+    "primary": "#00E5FF",
+    "secondary": "#B388FF",
+    "accent": "#69FF47",
+    "danger": "#FF4757",
+    "text": "#FFFFFF",
+    "background": "#000000"
+  },
+  "glow": { "intensity": 20, "enabled": true },
+  "background": {
+    "type": "animated-gradient",
+    "colors": ["#000000", "#0A0015", "#000A14"],
+    "speed": 8
+  },
+  "overlay": { "type": "scanlines", "opacity": 0.04 }
+}

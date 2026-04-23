@@ -1,0 +1,18 @@
+{
+  "name": "Ember",
+  "colors": {
+    "primary": "#FF6B35",
+    "secondary": "#FFB347",
+    "accent": "#FFD700",
+    "danger": "#FF4757",
+    "text": "#FFF5E6",
+    "background": "#0A0500"
+  },
+  "glow": { "intensity": 15, "enabled": true },
+  "background": {
+    "type": "particles",
+    "color": "#FF6B35",
+    "count": 40,
+    "speed": 0.5
+  }
+}
