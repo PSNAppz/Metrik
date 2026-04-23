@@ -10,6 +10,20 @@
 
 Metrik is a fast, always-on-top system monitor designed for builders who want both clean visuals and deep customization. It ships with real-time GPU/CPU/system stats, editable dashboard widgets, themes, and an extension-friendly architecture.
 
+## Screenshots
+
+![Metrik dashboard overview](./screenshots/metrik_screenshot_1.png)
+
+*Dashboard overview with live widgets and theme styling.*
+
+![Metrik alternate dashboard view](./screenshots/metrik_screenshot_2.png)
+
+*Alternate dashboard configuration view.*
+
+![Metrik edit mode](./screenshots/metrik_edit_mode.png)
+
+*Edit mode with drag/resize controls for dashboard customization.*
+
 ## Why Metrik
 
 - Real-time metric snapshots streamed from Rust providers to a React UI.
@@ -75,7 +89,7 @@ Want to extend Metrik with your own UI components or metric providers?
 
 Use the dedicated developer guide in:
 
-- [`src/mods/README.md`](./src/mods/README.md)
+- `[src/mods/README.md](./src/mods/README.md)`
 
 That doc covers:
 
@@ -108,4 +122,4 @@ Ideas that are especially welcome:
 
 ## License
 
-Add a license file (`LICENSE`) to define usage terms for contributors and users.
+MPL v2
