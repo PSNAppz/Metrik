@@ -12,6 +12,8 @@ impl SysInfoProvider {
     pub fn new() -> Self {
         let mut sys = System::new();
         sys.refresh_cpu_usage();
+        std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
+        sys.refresh_cpu_usage();
         Self {
             sys: Mutex::new(sys),
             components: Mutex::new(Components::new_with_refreshed_list()),
@@ -46,7 +48,7 @@ impl MetricProvider for SysInfoProvider {
 
         {
             let mut components = self.components.lock().unwrap();
-            components.refresh(true);
+            components.refresh(false);
             for component in components.iter() {
                 let label = component.label().to_lowercase();
                 if label.contains("cpu") || label.contains("core") || label.contains("package") {

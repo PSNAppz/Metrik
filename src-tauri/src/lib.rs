@@ -48,24 +48,18 @@ fn get_config(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
     let store = app
         .store("config.json")
         .map_err(|e| e.to_string())?;
-    let theme = store
-        .get("theme")
-        .unwrap_or(serde_json::Value::String("cyberpunk".into()));
-    let layout = store
-        .get("layout")
-        .unwrap_or(serde_json::Value::String("full-panel".into()));
-    let position = store
-        .get("position")
-        .unwrap_or(serde_json::Value::Null);
-    let monitor = store
-        .get("monitor")
-        .unwrap_or(serde_json::Value::Null);
+    let theme = store.get("theme").unwrap_or(serde_json::Value::String("cyberpunk".into()));
+    let position = store.get("position").unwrap_or(serde_json::Value::Null);
+    let widgets = store.get("widgets").unwrap_or(serde_json::Value::Null);
+    let custom_background = store.get("custom_background").unwrap_or(serde_json::Value::Null);
+    let custom_overlay = store.get("custom_overlay").unwrap_or(serde_json::Value::Null);
 
     Ok(serde_json::json!({
         "theme": theme,
-        "layout": layout,
         "position": position,
-        "monitor": monitor,
+        "widgets": widgets,
+        "custom_background": custom_background,
+        "custom_overlay": custom_overlay,
     }))
 }
 
@@ -83,6 +77,44 @@ fn exit_app(app: tauri::AppHandle) {
     app.exit(0);
 }
 
+#[tauri::command]
+fn copy_background_file(app: tauri::AppHandle, source_path: String) -> Result<String, String> {
+    let source = std::path::Path::new(&source_path);
+    if !source.exists() {
+        return Err("File not found".into());
+    }
+
+    let app_data = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| e.to_string())?;
+    let bg_dir = app_data.join("backgrounds");
+    std::fs::create_dir_all(&bg_dir).map_err(|e| e.to_string())?;
+
+    let filename = source
+        .file_name()
+        .ok_or("Invalid filename")?
+        .to_string_lossy()
+        .to_string();
+
+    let ts = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis();
+    let dest_name = format!("{}_{}", ts, filename);
+    let dest = bg_dir.join(&dest_name);
+
+    std::fs::copy(source, &dest).map_err(|e| e.to_string())?;
+
+    Ok(dest.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn get_app_data_dir(app: tauri::AppHandle) -> Result<String, String> {
+    let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    Ok(dir.to_string_lossy().to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -91,6 +123,7 @@ pub fn run() {
                 let _ = w.set_focus();
             }
         }))
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
@@ -113,7 +146,7 @@ pub fn run() {
             start_metric_loop(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_config, save_config, exit_app])
+        .invoke_handler(tauri::generate_handler![get_config, save_config, exit_app, copy_background_file, get_app_data_dir])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

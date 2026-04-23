@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import type { BackgroundConfig, BackgroundOverlay } from "../types";
 
 interface Props {
@@ -13,6 +14,12 @@ export function BackgroundLayer({ config, overlay }: Props) {
       {overlay?.type === "scanlines" && (
         <div
           className="scanlines-overlay"
+          style={{ opacity: overlay.opacity }}
+        />
+      )}
+      {overlay?.type === "noise" && (
+        <div
+          className="noise-overlay"
           style={{ opacity: overlay.opacity }}
         />
       )}
@@ -70,6 +77,57 @@ function BackgroundContent({ config }: { config: BackgroundConfig }) {
           color={config.color}
           count={config.count}
           speed={config.speed}
+        />
+      );
+
+    case "user-image": {
+      const imgSrc = config.src.startsWith("http") || config.src.startsWith("asset:")
+        ? config.src
+        : convertFileSrc(config.src);
+      return (
+        <img
+          className="bg-fill bg-image-fit"
+          src={imgSrc}
+          style={{ opacity: config.opacity ?? 1 }}
+          alt=""
+          draggable={false}
+        />
+      );
+    }
+
+    case "user-url":
+      return (
+        <img
+          className="bg-fill bg-image-fit"
+          src={config.url}
+          style={{ opacity: config.opacity ?? 1 }}
+          alt=""
+          draggable={false}
+        />
+      );
+
+    case "user-video": {
+      const vidSrc = config.src.startsWith("http") || config.src.startsWith("asset:")
+        ? config.src
+        : convertFileSrc(config.src);
+      return (
+        <video
+          className="bg-fill bg-video"
+          src={vidSrc}
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{ opacity: config.opacity ?? 1 }}
+        />
+      );
+    }
+
+    case "matrix":
+      return (
+        <MatrixRain
+          color={config.color || "#00ff41"}
+          speed={config.speed || 1}
         />
       );
 
@@ -138,8 +196,8 @@ function ParticleCanvas({
       y: Math.random() * h,
       vx: (Math.random() - 0.5) * speed * 0.5,
       vy: (Math.random() - 0.5) * speed * 0.5,
-      size: Math.random() * 2 + 0.5,
-      alpha: Math.random() * 0.5 + 0.1,
+      size: Math.random() * 4 + 2,
+      alpha: Math.random() * 0.5 + 0.2,
     }));
 
     function draw() {
@@ -165,6 +223,75 @@ function ParticleCanvas({
     draw();
     return () => cancelAnimationFrame(animRef.current);
   }, [color, count, speed]);
+
+  return <canvas ref={canvasRef} className="bg-fill bg-particles" />;
+}
+
+const MATRIX_CHARS = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF";
+
+function MatrixRain({ color, speed }: { color: string; speed: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animRef = useRef<number>(0);
+  const dropsRef = useRef<number[]>([]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const w = 800;
+    const h = 480;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.scale(dpr, dpr);
+
+    const fontSize = 14;
+    const cols = Math.floor(w / fontSize);
+    dropsRef.current = Array.from({ length: cols }, () => Math.random() * -50);
+
+    let last = 0;
+    const interval = 50 / speed;
+
+    function draw(ts: number) {
+      if (ts - last < interval) {
+        animRef.current = requestAnimationFrame(draw);
+        return;
+      }
+      last = ts;
+
+      ctx!.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx!.fillRect(0, 0, w, h);
+
+      ctx!.fillStyle = color;
+      ctx!.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < dropsRef.current.length; i++) {
+        const ch = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+        const y = dropsRef.current[i] * fontSize;
+
+        ctx!.globalAlpha = 0.9;
+        ctx!.fillText(ch, i * fontSize, y);
+
+        ctx!.globalAlpha = 0.4;
+        if (y - fontSize > 0) {
+          const prev = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+          ctx!.fillText(prev, i * fontSize, y - fontSize);
+        }
+
+        dropsRef.current[i]++;
+        if (dropsRef.current[i] * fontSize > h && Math.random() > 0.975) {
+          dropsRef.current[i] = 0;
+        }
+      }
+      ctx!.globalAlpha = 1;
+      animRef.current = requestAnimationFrame(draw);
+    }
+
+    animRef.current = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(animRef.current);
+  }, [color, speed]);
 
   return <canvas ref={canvasRef} className="bg-fill bg-particles" />;
 }

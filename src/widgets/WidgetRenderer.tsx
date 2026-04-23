@@ -1,45 +1,49 @@
 import { WIDGET_REGISTRY } from "./widget-registry";
+import { DraggableWidget } from "../editor/DraggableWidget";
 import type { WidgetConfig } from "../types";
 
 interface Props {
-  config: WidgetConfig[];
+  widgets: WidgetConfig[];
+  editing: boolean;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
+  onMove: (id: string, x: number, y: number) => void;
+  onResize: (id: string, w: number, h: number) => void;
 }
 
-export function WidgetRenderer({ config }: Props) {
+export function WidgetRenderer({
+  widgets, editing, selectedId, onSelect, onMove, onResize,
+}: Props) {
   return (
-    <>
-      {config.map((widget, i) => {
+    <div className="widget-canvas">
+      {widgets.map((widget) => {
         const Component = WIDGET_REGISTRY[widget.type];
         if (!Component) return null;
 
-        const gridClass = getGridClass(widget);
-
         return (
-          <div key={i} className={`widget-slot ${gridClass}`}>
-            <Component metricKey={widget.metricKey} label={widget.label} />
-          </div>
+          <DraggableWidget
+            key={widget.id}
+            x={widget.x}
+            y={widget.y}
+            w={widget.w}
+            h={widget.h}
+            editing={editing}
+            selected={selectedId === widget.id}
+            onSelect={() => onSelect(widget.id)}
+            onMove={(x, y) => onMove(widget.id, x, y)}
+            onResize={(w, h) => onResize(widget.id, w, h)}
+          >
+            <Component
+              metricKey={widget.metricKey}
+              label={widget.label}
+              style={widget.style}
+              textContent={widget.textContent}
+              w={widget.w}
+              h={widget.h}
+            />
+          </DraggableWidget>
         );
       })}
-    </>
+    </div>
   );
-}
-
-function getGridClass(w: WidgetConfig): string {
-  const classes: string[] = [];
-
-  if (w.row === "header") {
-    classes.push("slot-header");
-  } else if (typeof w.row === "number") {
-    classes.push(`slot-row-${w.row}`);
-  }
-
-  if (w.col === "right") {
-    classes.push("slot-right");
-  } else if (typeof w.col === "string" && w.col.includes("-")) {
-    classes.push("slot-span");
-  } else if (typeof w.col === "number") {
-    classes.push(`slot-col-${w.col}`);
-  }
-
-  return classes.join(" ");
 }
