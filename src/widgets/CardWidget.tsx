@@ -1,6 +1,9 @@
 import { useMetricsContext } from "../providers/MetricsContext";
 import type { WidgetProps } from "../types";
 
+// Keys whose Float values represent absolute physical quantities, not 0–100%
+const ABSOLUTE_KEYS = new Set(["gpu.power", "gpu.clock", "gpu.temp", "cpu.temp"]);
+
 function formatValue(
   val: { type: string; value: any } | undefined,
   key: string
@@ -19,6 +22,7 @@ function formatValue(
     case "Integer": {
       const n = val.value as number;
       if (key.includes("clock")) return `${n} MHz`;
+      if (key === "frontend.fps") return `${n} FPS`;
       return String(n);
     }
     case "Ratio": {
@@ -34,9 +38,9 @@ function formatValue(
   }
 }
 
-function getPercent(val: { type: string; value: any } | undefined): number {
+function getPercent(val: { type: string; value: any } | undefined, key: string): number {
   if (!val) return 0;
-  if (val.type === "Float") return Math.min(val.value as number, 100);
+  if (val.type === "Float" && !ABSOLUTE_KEYS.has(key)) return Math.min(val.value as number, 100);
   if (val.type === "Ratio" && val.value.total > 0)
     return ((val.value.used / val.value.total) * 100);
   return 0;
@@ -45,9 +49,10 @@ function getPercent(val: { type: string; value: any } | undefined): number {
 export function CardWidget({ metricKey, label }: WidgetProps) {
   const metrics = useMetricsContext();
   const val = metricKey ? metrics.current[metricKey] : undefined;
-  const display = formatValue(val, metricKey || "");
-  const percent = getPercent(val);
-  const showBar = val?.type === "Float" || val?.type === "Ratio";
+  const key = metricKey || "";
+  const display = formatValue(val, key);
+  const percent = getPercent(val, key);
+  const showBar = (val?.type === "Float" && !ABSOLUTE_KEYS.has(key)) || val?.type === "Ratio";
 
   return (
     <div className="widget card-widget">

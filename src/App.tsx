@@ -9,8 +9,9 @@ import { Toolbar } from "./editor/Toolbar";
 import { PropertyPanel } from "./editor/PropertyPanel";
 import { WidgetPalette } from "./editor/WidgetPalette";
 import { BackgroundPicker } from "./editor/BackgroundPicker";
+import { IntegrationPanel } from "./editor/IntegrationPanel";
 import { DEFAULT_WIDGETS } from "./layouts/default-widgets";
-import type { ThemeConfig, WidgetConfig, BackgroundConfig, BackgroundOverlay } from "./types";
+import type { ThemeConfig, WidgetConfig, BackgroundConfig, BackgroundOverlay, StylePreset } from "./types";
 
 import cyberpunkTheme from "./themes/cyberpunk.json";
 import minimalTheme from "./themes/minimal.json";
@@ -50,6 +51,9 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showPalette, setShowPalette] = useState(false);
   const [showBgPicker, setShowBgPicker] = useState(false);
+  const [showIntegrations, setShowIntegrations] = useState<string | null>(null);
+  const [autostartEnabled, setAutostartEnabled] = useState(false);
+  const [stylePresets, setStylePresets] = useState<(StylePreset | null)[]>([null, null, null]);
 
   const saveTimeout = useRef<ReturnType<typeof setTimeout>>();
 
@@ -82,6 +86,9 @@ export default function App() {
     loadConfig();
     restoreWindowPosition();
     setupPositionPersistence();
+    invoke<boolean>("get_autostart_enabled")
+      .then(setAutostartEnabled)
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -91,6 +98,7 @@ export default function App() {
         setSelectedId(null);
         setShowPalette(false);
         setShowBgPicker(false);
+        setShowIntegrations(null);
         return;
       }
       if (e.key === "Escape" || (e.ctrlKey && e.key === "q")) {
@@ -145,16 +153,38 @@ export default function App() {
         setOverlay(store.custom_overlay);
       }
     } catch {}
+
+    try {
+      const config = await invoke<any>("get_config");
+      const loaded: (StylePreset | null)[] = [null, null, null];
+      for (let i = 0; i < 3; i++) {
+        const p = config[`style_preset_${i}`];
+        if (p && p.themeName) loaded[i] = p;
+      }
+      setStylePresets(loaded);
+    } catch {}
   }
 
   async function restoreWindowPosition() {
     try {
       const config = await invoke<any>("get_config");
       if (config.position) {
+        const { x, y } = config.position;
+        // Ignore Windows minimized/off-screen sentinel values
+        if (x <= -10000 || y <= -10000) return;
         const win = getCurrentWindow();
-        await win.setPosition(
-          new PhysicalPosition(config.position.x, config.position.y)
+        const monitors = await availableMonitors();
+        // Make sure the position lands on at least one monitor
+        const onScreen = monitors.some(
+          (m) =>
+            x >= m.position.x &&
+            x < m.position.x + m.size.width &&
+            y >= m.position.y &&
+            y < m.position.y + m.size.height
         );
+        if (onScreen) {
+          await win.setPosition(new PhysicalPosition(x, y));
+        }
       }
     } catch {}
   }
@@ -240,9 +270,46 @@ export default function App() {
     }
   }
 
+  function handleAutostartChange(enabled: boolean) {
+    setAutostartEnabled(enabled);
+    invoke("set_autostart_enabled", { enabled }).catch(() => {});
+  }
+
+  function handleSavePreset(slotIndex: number) {
+    const preset: StylePreset = {
+      name: `Preset ${slotIndex + 1}`,
+      themeName,
+      background,
+      overlay,
+      widgets: structuredClone(widgets),
+    };
+    setStylePresets((prev) => {
+      const next = [...prev];
+      next[slotIndex] = preset;
+      return next;
+    });
+    invoke("save_config", {
+      key: `style_preset_${slotIndex}`,
+      value: preset,
+    }).catch(() => {});
+  }
+
+  function handleLoadPreset(slotIndex: number) {
+    const preset = stylePresets[slotIndex];
+    if (!preset) return;
+    if (preset.themeName && THEMES[preset.themeName]) {
+      setThemeName(preset.themeName);
+      invoke("save_config", { key: "theme", value: preset.themeName }).catch(() => {});
+    }
+    setBackground(preset.background);
+    setOverlay(preset.overlay);
+    setWidgets(preset.widgets);
+    setSelectedId(null);
+  }
+
   const selectedWidget = widgets.find((w) => w.id === selectedId) || null;
 
-  const sideContent = showBgPicker ? "bg" : showPalette ? "palette" : selectedWidget ? "props" : null;
+  const sideContent = showIntegrations ? "integrations" : showBgPicker ? "bg" : showPalette ? "palette" : selectedWidget ? "props" : null;
 
   return (
     <MetricsProvider>
@@ -252,15 +319,22 @@ export default function App() {
             themeName={themeName}
             themeNames={Object.keys(THEMES)}
             onThemeChange={handleThemeChange}
-            onAddWidget={() => { setShowPalette(true); setShowBgPicker(false); }}
-            onBackground={() => { setShowBgPicker(true); setShowPalette(false); }}
+            onAddWidget={() => { setShowPalette(true); setShowBgPicker(false); setShowIntegrations(null); }}
+            onBackground={() => { setShowBgPicker(true); setShowPalette(false); setShowIntegrations(null); }}
+            onIntegrations={() => { setShowIntegrations("youtube"); setShowPalette(false); setShowBgPicker(false); }}
             onReset={handleReset}
             onDone={() => {
               setEditing(false);
               setSelectedId(null);
               setShowPalette(false);
               setShowBgPicker(false);
+              setShowIntegrations(null);
             }}
+            autostartEnabled={autostartEnabled}
+            onAutostartChange={handleAutostartChange}
+            presetSlots={stylePresets}
+            onSavePreset={handleSavePreset}
+            onLoadPreset={handleLoadPreset}
           />
 
           <div className="edit-body">
@@ -305,6 +379,58 @@ export default function App() {
                   onDelete={handleWidgetDelete}
                   onClose={() => setSelectedId(null)}
                 />
+              )}
+              {sideContent === "integrations" && (
+                <div className="integrations-panel" onClick={(e) => e.stopPropagation()}>
+                  <div className="pp-header">
+                    <span>Integrations</span>
+                    <button className="pp-close" onClick={() => setShowIntegrations(null)}>X</button>
+                  </div>
+                  <div className="int-tabs">
+                    {["youtube", "discord", "steam"].map((p) => (
+                      <button
+                        key={p}
+                        className={`int-tab ${showIntegrations === p ? "active" : ""}`}
+                        onClick={() => setShowIntegrations(p)}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                  {showIntegrations === "youtube" && (
+                    <IntegrationPanel
+                      provider="youtube"
+                      title="YouTube Config"
+                      fields={[
+                        { key: "api_key", label: "API Key", placeholder: "AIza...", secret: true },
+                        { key: "channel_id", label: "Channel ID", placeholder: "UC..." },
+                      ]}
+                      onClose={() => setShowIntegrations(null)}
+                    />
+                  )}
+                  {showIntegrations === "discord" && (
+                    <IntegrationPanel
+                      provider="discord"
+                      title="Discord Config"
+                      fields={[
+                        { key: "user_id", label: "User ID", placeholder: "123456789..." },
+                        { key: "bot_token", label: "Bot Token (optional)", placeholder: "Bot token for presence", secret: true },
+                      ]}
+                      onClose={() => setShowIntegrations(null)}
+                    />
+                  )}
+                  {showIntegrations === "steam" && (
+                    <IntegrationPanel
+                      provider="steam"
+                      title="Steam Config"
+                      fields={[
+                        { key: "api_key", label: "API Key", placeholder: "Steam Web API key", secret: true },
+                        { key: "steam_id", label: "Steam ID", placeholder: "76561198..." },
+                      ]}
+                      onClose={() => setShowIntegrations(null)}
+                    />
+                  )}
+                </div>
               )}
             </div>
           </div>

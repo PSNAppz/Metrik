@@ -16,6 +16,8 @@
     "core:window:allow-current-monitor",
     "autostart:default",
     "store:default",
-    "dialog:default"
+    "dialog:default",
+    "core:tray:default",
+    "opener:default"
   ]
 }

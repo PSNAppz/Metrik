@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type { WidgetConfig } from "../types";
-import { METRIC_KEYS, WIDGET_TYPES } from "../types";
+import { METRIC_KEYS, METRIC_LABELS, WIDGET_TYPES } from "../types";
 
 function CoordBox({ label, value, min, max, onChange }: {
   label: string; value: number; min: number; max: number;
@@ -68,7 +68,7 @@ export function PropertyPanel({ widget, onChange, onDelete, onClose }: Props) {
           >
             <option value="">None</option>
             {METRIC_KEYS.map((k) => (
-              <option key={k} value={k}>{k}</option>
+              <option key={k} value={k}>{METRIC_LABELS[k] ?? k}</option>
             ))}
           </select>
         </div>

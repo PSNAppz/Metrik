@@ -83,7 +83,30 @@ export const METRIC_KEYS = [
   "cpu.temp",
   "ram",
   "frontend.fps",
+  "game.name",
+  "game.fps",
+  "game.cpu_usage",
+  "game.memory_mb",
 ] as const;
+
+/** Human-readable display labels for metric keys shown in the editor UI. */
+export const METRIC_LABELS: Record<string, string> = {
+  "gpu.usage": "GPU Usage",
+  "gpu.temp": "GPU Temp",
+  "gpu.vram": "GPU VRAM",
+  "gpu.clock": "GPU Clock",
+  "gpu.fan": "GPU Fan",
+  "gpu.power": "GPU Power",
+  "gpu.name": "GPU Name",
+  "cpu.usage": "CPU Usage",
+  "cpu.temp": "CPU Temp",
+  "ram": "RAM",
+  "frontend.fps": "Panel FPS",
+  "game.name": "Game Name",
+  "game.fps": "Game FPS",
+  "game.cpu_usage": "Game CPU",
+  "game.memory_mb": "Game Memory",
+};
 
 export const WIDGET_TYPES = [
   "gauge",
@@ -91,4 +114,21 @@ export const WIDGET_TYPES = [
   "sparkline",
   "clock",
   "text",
+  "youtube",
+  "discord",
+  "steam",
+  "gamefps",
 ] as const;
+
+export interface IntegrationConfig {
+  provider: string;
+  [key: string]: unknown;
+}
+
+export interface StylePreset {
+  name: string;
+  themeName: string;
+  background: BackgroundConfig;
+  overlay?: BackgroundOverlay;
+  widgets: WidgetConfig[];
+}

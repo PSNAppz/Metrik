@@ -1,5 +1,7 @@
 pub mod nvml_provider;
 pub mod sysinfo_provider;
+pub mod game_provider;
+pub mod fps_tracer;
 
 use serde::Serialize;
 use std::collections::HashMap;

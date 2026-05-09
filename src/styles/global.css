@@ -423,6 +423,84 @@ html, body, #root {
   opacity: 1;
 }
 
+.et-autostart-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--color-text);
+  cursor: pointer;
+  opacity: 0.75;
+  padding: 4px 8px;
+  border: 1px solid var(--editor-border);
+  border-radius: 6px;
+  background: var(--editor-surface);
+  transition: all 0.15s;
+}
+
+.et-autostart-toggle:hover {
+  opacity: 1;
+  border-color: var(--color-primary);
+}
+
+.et-autostart-toggle input[type="checkbox"] {
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  width: 13px;
+  height: 13px;
+}
+
+.et-preset-wrap {
+  position: relative;
+}
+
+.et-preset-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  min-width: 220px;
+  background: #0d0d18;
+  border: 1px solid var(--editor-border);
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.et-preset-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.et-preset-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.et-preset-name {
+  flex: 1;
+  font-size: 11px;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.et-btn-tiny {
+  padding: 2px 8px !important;
+  font-size: 10px !important;
+}
+
+.et-btn-tiny:disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
 .et-select {
   padding: 4px 8px;
   font-size: 11px;
@@ -721,6 +799,23 @@ html, body, #root {
   color: var(--color-primary);
 }
 
+.wp-category-divider {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-primary);
+  padding: 8px 0 4px;
+  margin-top: 4px;
+  border-top: 1px solid var(--editor-border);
+}
+
+.wp-social-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
 /* ── Background Picker ── */
 .bg-picker-modal {
   width: 100%;
@@ -895,6 +990,207 @@ html, body, #root {
   font-size: 11px;
   color: var(--color-secondary);
   opacity: 0.6;
+}
+
+/* ── Integrations Panel ── */
+.integrations-panel {
+  width: 100%;
+  padding: 10px;
+}
+
+.int-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.int-tab {
+  flex: 1;
+  padding: 5px;
+  font-size: 10px;
+  text-transform: capitalize;
+  background: var(--editor-surface);
+  color: var(--color-text);
+  border: 1px solid var(--editor-border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.int-tab.active {
+  background: var(--color-primary);
+  color: #000;
+  border-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.int-tab:hover:not(.active) {
+  border-color: var(--color-primary);
+}
+
+/* ── Integration Widgets (YouTube, Discord, Steam) ── */
+.int-loading,
+.int-unconfigured,
+.yt-loading,
+.yt-unconfigured {
+  font-size: 11px;
+  color: var(--color-secondary);
+  opacity: 0.6;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.int-name,
+.yt-channel {
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: 0 0 var(--glow-intensity) currentColor;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.yt-stats {
+  display: flex;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--color-secondary);
+  margin-bottom: 4px;
+}
+
+.yt-latest {
+  font-size: 10px;
+  color: var(--color-text);
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.yt-latest:hover {
+  opacity: 1;
+  color: var(--color-primary);
+}
+
+.yt-link-btn,
+.int-link-btn {
+  padding: 2px 10px;
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-primary);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.yt-link-btn:hover,
+.int-link-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--color-primary);
+}
+
+.int-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.steam-status {
+  font-size: 10px;
+  color: var(--color-secondary);
+  margin-bottom: 2px;
+}
+
+.steam-game {
+  font-size: 10px;
+  color: var(--color-accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.steam-game:hover {
+  text-decoration: underline;
+}
+
+.steam-playtime {
+  font-size: 9px;
+  color: var(--color-secondary);
+  opacity: 0.6;
+  margin-bottom: 4px;
+}
+
+/* ── Game FPS Widget ── */
+.gfps-idle {
+  font-size: 11px;
+  color: var(--color-secondary);
+  opacity: 0.5;
+}
+
+.gfps-name {
+  font-size: 12px;
+  font-weight: 600;
+  text-shadow: 0 0 var(--glow-intensity) currentColor;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  margin-bottom: 2px;
+}
+
+.gfps-fps {
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 var(--glow-intensity) currentColor;
+  line-height: 1;
+}
+
+.gfps-unit {
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.gfps-no-fps {
+  font-size: 9px;
+  color: var(--color-secondary);
+  opacity: 0.5;
+  margin: 2px 0;
+}
+
+.gfps-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.gfps-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gfps-stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+  text-shadow: 0 0 calc(var(--glow-intensity) * 0.5) var(--color-primary);
+}
+
+.gfps-stat-label {
+  font-size: 9px;
+  color: var(--color-secondary);
+  opacity: 0.6;
+  letter-spacing: 1px;
 }
 
 /* ── Scrollbar ── */
