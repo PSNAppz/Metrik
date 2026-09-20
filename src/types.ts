@@ -48,6 +48,7 @@ export type BackgroundConfig =
   | { type: "user-image"; src: string; opacity?: number }
   | { type: "user-url"; url: string; opacity?: number }
   | { type: "user-video"; src: string; opacity?: number }
+  | { type: "user-youtube"; videoId: string; opacity?: number }
   | { type: "matrix"; color?: string; speed?: number };
 
 export type BackgroundOverlay =

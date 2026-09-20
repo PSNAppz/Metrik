@@ -106,6 +106,20 @@ function BackgroundContent({ config }: { config: BackgroundConfig }) {
         />
       );
 
+    case "user-youtube":
+      return (
+        <iframe
+          className="bg-fill bg-video"
+          src={`https://www.youtube.com/embed/${config.videoId}?autoplay=1&mute=1&loop=1&playlist=${config.videoId}&controls=0&showinfo=0&modestbranding=1`}
+          allow="autoplay; encrypted-media"
+          style={{
+            opacity: config.opacity ?? 1,
+            border: "none",
+            pointerEvents: "none",
+          }}
+        />
+      );
+
     case "user-video": {
       const vidSrc = config.src.startsWith("http") || config.src.startsWith("asset:")
         ? config.src

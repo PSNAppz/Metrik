@@ -56,9 +56,30 @@ export function BackgroundPicker({ background, overlay, onChangeBackground, onCh
     }
   }
 
+  function extractYouTubeId(url: string): string | null {
+    const patterns = [
+      /(?:youtube\.com\/watch\?.*v=)([\w-]{11})/,
+      /(?:youtu\.be\/)([\w-]{11})/,
+      /(?:youtube\.com\/embed\/)([\w-]{11})/,
+      /(?:youtube\.com\/shorts\/)([\w-]{11})/,
+    ];
+    for (const re of patterns) {
+      const m = url.match(re);
+      if (m) return m[1];
+    }
+    return null;
+  }
+
   function applyUrl() {
     const url = urlInput.trim();
     if (!url) return;
+
+    const ytId = extractYouTubeId(url);
+    if (ytId) {
+      onChangeBackground({ type: "user-youtube", videoId: ytId, opacity });
+      return;
+    }
+
     const isVideo = /\.(mp4|webm)(\?.*)?$/i.test(url);
     onChangeBackground(
       isVideo
@@ -104,7 +125,7 @@ export function BackgroundPicker({ background, overlay, onChangeBackground, onCh
             <div className="bp-url-row">
               <input
                 type="text"
-                placeholder="https://example.com/bg.gif"
+                placeholder="https://youtube.com/watch?v=... or image URL"
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
               />
