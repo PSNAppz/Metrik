@@ -72,16 +72,18 @@ export function SparklineWidget({ metricKey, label, style }: WidgetProps) {
       const col = HISTORY_LEN - hist.length + i;
       const x = col * colW + colW / 2 - DOT / 2 + offset;
       if (x < -DOT || x > w) continue;
-      const lit = (Math.max(0, Math.min(100, v)) / 100) * rows;
+      // Always light at least the bottom dot so low values still register.
+      const lit = Math.max(0.6, (Math.max(0, Math.min(100, v)) / 100) * rows);
       const full = Math.floor(lit);
       const frac = lit - full;
       for (let r = 0; r < rows; r++) {
         const fill = r < full ? 1 : r === full ? frac : 0;
-        if (fill <= 0.02) continue;
-        const top = r >= full - 1;
+        if (fill <= 0.05) continue;
+        const top = r >= Math.ceil(lit) - 1;
         const rgb = top ? A : P;
-        const depth = 0.35 + 0.65 * (r / Math.max(1, lit));
-        ctx.fillStyle = rgba(rgb, fill * depth * (isHead ? 1 : 0.85));
+        const depth = 0.45 + 0.55 * (r / Math.max(1, lit));
+        const alpha = top ? Math.max(0.75, fill) : fill * depth;
+        ctx.fillStyle = rgba(rgb, alpha * (isHead ? 1 : 0.85));
         ctx.fillRect(x, h - (r + 1) * CELL + 1, DOT, DOT);
       }
     }

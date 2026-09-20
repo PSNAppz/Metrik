@@ -1,7 +1,7 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { useMetrics, type MetricsState } from "../hooks/useMetrics";
 
-const MetricsContext = createContext<MetricsState>({
+export const MetricsContext = createContext<MetricsState>({
   current: {},
   history: {},
 });

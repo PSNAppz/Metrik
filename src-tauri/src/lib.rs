@@ -52,11 +52,12 @@ fn get_config(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
     let store = app
         .store("config.json")
         .map_err(|e| e.to_string())?;
-    let theme = store.get("theme").unwrap_or(serde_json::Value::String("cyberpunk".into()));
+    let theme = store.get("theme").unwrap_or(serde_json::Value::String("amber".into()));
     let position = store.get("position").unwrap_or(serde_json::Value::Null);
     let widgets = store.get("widgets").unwrap_or(serde_json::Value::Null);
     let custom_background = store.get("custom_background").unwrap_or(serde_json::Value::Null);
     let custom_overlay = store.get("custom_overlay").unwrap_or(serde_json::Value::Null);
+    let layout_version = store.get("layout_version").unwrap_or(serde_json::Value::Null);
 
     let style_preset_0 = store.get("style_preset_0").unwrap_or(serde_json::Value::Null);
     let style_preset_1 = store.get("style_preset_1").unwrap_or(serde_json::Value::Null);
@@ -68,6 +69,7 @@ fn get_config(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
         "widgets": widgets,
         "custom_background": custom_background,
         "custom_overlay": custom_overlay,
+        "layout_version": layout_version,
         "style_preset_0": style_preset_0,
         "style_preset_1": style_preset_1,
         "style_preset_2": style_preset_2,
