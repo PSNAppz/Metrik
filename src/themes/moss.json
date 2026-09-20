@@ -1,0 +1,21 @@
+{
+  "name": "Moss",
+  "colors": {
+    "primary": "#D8F5DC",
+    "secondary": "#8FBF9F",
+    "accent": "#FF7A1A",
+    "danger": "#FF4A3D",
+    "text": "#E9FBEA",
+    "background": "#0E1A14",
+    "surface": "rgba(216, 245, 220, 0.045)",
+    "outline": "rgba(216, 245, 220, 0.14)",
+    "muted": "rgba(233, 251, 234, 0.46)"
+  },
+  "glow": { "intensity": 6, "enabled": true },
+  "background": {
+    "type": "pixel-flow",
+    "base": "#2A5A3E",
+    "colors": ["#F5E663", "#7EE08A"],
+    "speed": 1
+  }
+}

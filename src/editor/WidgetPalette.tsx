@@ -12,11 +12,11 @@ function makeId(): string {
 }
 
 const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
-  gauge: { w: 180, h: 180 },
-  card: { w: 170, h: 90 },
-  sparkline: { w: 400, h: 100 },
-  clock: { w: 150, h: 60 },
-  text: { w: 200, h: 50 },
+  gauge: { w: 170, h: 220 },
+  card: { w: 182, h: 104 },
+  sparkline: { w: 400, h: 108 },
+  clock: { w: 300, h: 160 },
+  text: { w: 200, h: 60 },
   youtube: { w: 220, h: 130 },
   discord: { w: 200, h: 110 },
   steam: { w: 220, h: 140 },

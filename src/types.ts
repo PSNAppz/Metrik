@@ -14,6 +14,8 @@ export interface WidgetStyle {
   fontSize?: number;
   showLabel?: boolean;
   showBar?: boolean;
+  /** Secondary caption shown after the label, e.g. "TIME · IDLE". */
+  caption?: string;
 }
 
 export interface WidgetConfig {
@@ -36,6 +38,12 @@ export interface ThemeColors {
   danger: string;
   text: string;
   background: string;
+  /** Tile fill (semi-transparent over the scene). */
+  surface?: string;
+  /** Hairline outline for tiles and dividers. */
+  outline?: string;
+  /** Dim text for labels / captions. */
+  muted?: string;
 }
 
 export type BackgroundConfig =
@@ -49,7 +57,13 @@ export type BackgroundConfig =
   | { type: "user-url"; url: string; opacity?: number }
   | { type: "user-video"; src: string; opacity?: number }
   | { type: "user-youtube"; videoId: string; opacity?: number }
-  | { type: "matrix"; color?: string; speed?: number };
+  | { type: "matrix"; color?: string; speed?: number }
+  /** Breathing blob of 8-bit glyphs (squares, rings, crosses). */
+  | { type: "glyph-cluster"; colors: [string, string]; density?: number; speed?: number }
+  /** Dot-matrix field with luminous streams flowing through it. */
+  | { type: "pixel-flow"; base: string; colors: [string, string]; speed?: number }
+  /** Any scene from src/scenes/registry.ts; `colors` meaning is per scene. */
+  | { type: "scene"; scene: string; colors: string[]; speed?: number };
 
 export type BackgroundOverlay =
   | { type: "scanlines"; opacity: number }

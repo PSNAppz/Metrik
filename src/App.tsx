@@ -10,27 +10,32 @@ import { PropertyPanel } from "./editor/PropertyPanel";
 import { WidgetPalette } from "./editor/WidgetPalette";
 import { BackgroundPicker } from "./editor/BackgroundPicker";
 import { IntegrationPanel } from "./editor/IntegrationPanel";
-import { DEFAULT_WIDGETS } from "./layouts/default-widgets";
+import { DEFAULT_WIDGETS, LAYOUT_VERSION } from "./layouts/default-widgets";
 import type { ThemeConfig, WidgetConfig, BackgroundConfig, BackgroundOverlay, StylePreset } from "./types";
 
-import cyberpunkTheme from "./themes/cyberpunk.json";
-import minimalTheme from "./themes/minimal.json";
-import emberTheme from "./themes/ember.json";
+import amberTheme from "./themes/amber.json";
+import mossTheme from "./themes/moss.json";
+import phosphorTheme from "./themes/phosphor.json";
 
 const THEMES: Record<string, ThemeConfig> = {
-  cyberpunk: cyberpunkTheme as ThemeConfig,
-  minimal: minimalTheme as ThemeConfig,
-  ember: emberTheme as ThemeConfig,
+  amber: amberTheme as ThemeConfig,
+  moss: mossTheme as ThemeConfig,
+  phosphor: phosphorTheme as ThemeConfig,
 };
+const DEFAULT_THEME = "amber";
 
 function applyThemeVars(theme: ThemeConfig) {
   const root = document.documentElement;
-  root.style.setProperty("--color-primary", theme.colors.primary);
-  root.style.setProperty("--color-secondary", theme.colors.secondary);
-  root.style.setProperty("--color-accent", theme.colors.accent);
-  root.style.setProperty("--color-danger", theme.colors.danger);
-  root.style.setProperty("--color-text", theme.colors.text);
-  root.style.setProperty("--color-bg", theme.colors.background);
+  const c = theme.colors;
+  root.style.setProperty("--color-primary", c.primary);
+  root.style.setProperty("--color-secondary", c.secondary);
+  root.style.setProperty("--color-accent", c.accent);
+  root.style.setProperty("--color-danger", c.danger);
+  root.style.setProperty("--color-text", c.text);
+  root.style.setProperty("--color-bg", c.background);
+  root.style.setProperty("--color-surface", c.surface ?? "rgba(255,255,255,0.04)");
+  root.style.setProperty("--color-outline", c.outline ?? "rgba(255,255,255,0.14)");
+  root.style.setProperty("--color-muted", c.muted ?? "rgba(255,255,255,0.45)");
   root.style.setProperty(
     "--glow-intensity",
     theme.glow.enabled ? `${theme.glow.intensity}px` : "0px"
@@ -38,13 +43,13 @@ function applyThemeVars(theme: ThemeConfig) {
 }
 
 export default function App() {
-  const [themeName, setThemeName] = useState("cyberpunk");
+  const [themeName, setThemeName] = useState(DEFAULT_THEME);
   const [widgets, setWidgets] = useState<WidgetConfig[]>(DEFAULT_WIDGETS);
   const [background, setBackground] = useState<BackgroundConfig>(
-    (cyberpunkTheme as ThemeConfig).background
+    THEMES[DEFAULT_THEME].background
   );
   const [overlay, setOverlay] = useState<BackgroundOverlay | undefined>(
-    (cyberpunkTheme as ThemeConfig).overlay
+    THEMES[DEFAULT_THEME].overlay
   );
 
   const [editing, setEditing] = useState(false);
@@ -55,7 +60,7 @@ export default function App() {
   const [autostartEnabled, setAutostartEnabled] = useState(false);
   const [stylePresets, setStylePresets] = useState<(StylePreset | null)[]>([null, null, null]);
 
-  const saveTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const saveTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const CANVAS_W = 800;
   const CANVAS_H = 480;
@@ -63,7 +68,7 @@ export default function App() {
   const TOOLBAR_H = 44;
   const GAP = 0;
 
-  const theme = THEMES[themeName] || THEMES.cyberpunk;
+  const theme = THEMES[themeName] || THEMES[DEFAULT_THEME];
 
   useEffect(() => {
     applyThemeVars(theme);
@@ -133,36 +138,37 @@ export default function App() {
   }, [widgets, background, overlay, debouncedSave]);
 
   async function loadConfig() {
+    let config: any;
     try {
-      const config = await invoke<any>("get_config");
-      if (config.theme && THEMES[config.theme]) setThemeName(config.theme);
-    } catch {}
+      config = await invoke<any>("get_config");
+    } catch {
+      return;
+    }
 
-    try {
-      const store = await invoke<any>("get_config");
-      // Load saved widgets
-      const savedWidgets = store.widgets;
-      if (Array.isArray(savedWidgets) && savedWidgets.length > 0) {
-        setWidgets(savedWidgets);
-      }
-      // Load saved background
-      if (store.custom_background && store.custom_background.type) {
-        setBackground(store.custom_background);
-      }
-      if (store.custom_overlay) {
-        setOverlay(store.custom_overlay);
-      }
-    } catch {}
+    if (config.theme && THEMES[config.theme]) setThemeName(config.theme);
 
-    try {
-      const config = await invoke<any>("get_config");
-      const loaded: (StylePreset | null)[] = [null, null, null];
-      for (let i = 0; i < 3; i++) {
-        const p = config[`style_preset_${i}`];
-        if (p && p.themeName) loaded[i] = p;
+    // Layouts saved by the previous visual system are discarded so the
+    // rebuilt defaults show up; presets are kept and can still be loaded.
+    if (config.layout_version === LAYOUT_VERSION) {
+      if (Array.isArray(config.widgets) && config.widgets.length > 0) {
+        setWidgets(config.widgets);
       }
-      setStylePresets(loaded);
-    } catch {}
+      if (config.custom_background && config.custom_background.type) {
+        setBackground(config.custom_background);
+      }
+      if (config.custom_overlay) {
+        setOverlay(config.custom_overlay);
+      }
+    } else {
+      invoke("save_config", { key: "layout_version", value: LAYOUT_VERSION }).catch(() => {});
+    }
+
+    const loaded: (StylePreset | null)[] = [null, null, null];
+    for (let i = 0; i < 3; i++) {
+      const p = config[`style_preset_${i}`];
+      if (p && p.themeName && THEMES[p.themeName]) loaded[i] = p;
+    }
+    setStylePresets(loaded);
   }
 
   async function restoreWindowPosition() {
@@ -442,10 +448,6 @@ export default function App() {
         >
           <BackgroundLayer config={background} overlay={overlay} />
           <div className="panel-content">
-            <header className="panel-header">
-              <span className="panel-title">METRIK</span>
-              <GpuName />
-            </header>
             <NoDataOverlay />
             <WidgetRenderer
               widgets={widgets}
@@ -456,7 +458,11 @@ export default function App() {
               onResize={handleWidgetResize}
             />
           </div>
-          <div className="edit-hint">Press E to edit</div>
+          <footer className="panel-footer">
+            <span className="panel-brand">METRIK</span>
+            <GpuName />
+            <span className="edit-hint">E · EDIT</span>
+          </footer>
         </div>
       )}
     </MetricsProvider>
@@ -467,7 +473,7 @@ function GpuName() {
   const metrics = useMetricsContext();
   const name = metrics.current["gpu.name"];
   if (!name || name.type !== "Text") return null;
-  return <span className="gpu-name">{name.value}</span>;
+  return <span className="gpu-name">· {name.value.replace(/^NVIDIA\s+/i, "")}</span>;
 }
 
 function NoDataOverlay() {
@@ -477,8 +483,12 @@ function NoDataOverlay() {
 
   return (
     <div className="no-data-overlay">
-      <div className="no-data-spinner" />
-      <div className="no-data-text">Waiting for metrics...</div>
+      <div className="no-data-spinner">
+        {Array.from({ length: 8 }, (_, i) => (
+          <span key={i} style={{ animationDelay: `${i * 0.1}s` }} />
+        ))}
+      </div>
+      <div className="no-data-text">WAITING FOR METRICS</div>
       <div className="no-data-hint">
         If this persists, check that NVIDIA drivers are installed.
       </div>

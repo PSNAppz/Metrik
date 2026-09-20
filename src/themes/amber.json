@@ -1,0 +1,21 @@
+{
+  "name": "Amber",
+  "colors": {
+    "primary": "#FFB347",
+    "secondary": "#9AD9A8",
+    "accent": "#4ADE80",
+    "danger": "#FF5A1F",
+    "text": "#F7EFE3",
+    "background": "#050505",
+    "surface": "rgba(255, 179, 71, 0.035)",
+    "outline": "rgba(255, 179, 71, 0.16)",
+    "muted": "rgba(247, 239, 227, 0.48)"
+  },
+  "glow": { "intensity": 10, "enabled": true },
+  "background": {
+    "type": "glyph-cluster",
+    "colors": ["#FFB347", "#4ADE80"],
+    "density": 1,
+    "speed": 1
+  }
+}

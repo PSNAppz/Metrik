@@ -1,0 +1,21 @@
+{
+  "name": "Phosphor",
+  "colors": {
+    "primary": "#5EEAD4",
+    "secondary": "#FF6A2B",
+    "accent": "#F5D90A",
+    "danger": "#FF3B30",
+    "text": "#E6FFFA",
+    "background": "#000000",
+    "surface": "rgba(94, 234, 212, 0.035)",
+    "outline": "rgba(94, 234, 212, 0.16)",
+    "muted": "rgba(230, 255, 250, 0.46)"
+  },
+  "glow": { "intensity": 12, "enabled": true },
+  "background": {
+    "type": "pixel-flow",
+    "base": "#1F6F63",
+    "colors": ["#F5E663", "#9EE8C8"],
+    "speed": 1.2
+  }
+}

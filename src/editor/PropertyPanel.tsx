@@ -83,6 +83,18 @@ export function PropertyPanel({ widget, onChange, onDelete, onClose }: Props) {
         />
       </div>
 
+      {(widget.type === "card" || widget.type === "clock") && (
+        <div className="pp-section">
+          <label>Caption (after label)</label>
+          <input
+            type="text"
+            value={widget.style?.caption || ""}
+            placeholder="e.g. GPU, IDLE"
+            onChange={(e) => updateStyle({ caption: e.target.value || undefined })}
+          />
+        </div>
+      )}
+
       {widget.type === "text" && (
         <div className="pp-section">
           <label>Text Content</label>
@@ -116,14 +128,26 @@ export function PropertyPanel({ widget, onChange, onDelete, onClose }: Props) {
       </div>
 
       <div className="pp-section">
-        <label>Font Size: {widget.style?.fontSize ?? 16}px</label>
+        <label>Font Size: {widget.style?.fontSize ? `${widget.style.fontSize}px` : "auto"}</label>
         <input
           type="range"
           min={8}
-          max={64}
+          max={120}
           value={widget.style?.fontSize ?? 16}
           onChange={(e) => updateStyle({ fontSize: Number(e.target.value) })}
         />
+        {widget.style?.fontSize !== undefined && (
+          <button
+            className="pp-btn-small"
+            onClick={() => {
+              const s = { ...widget.style };
+              delete s.fontSize;
+              onChange({ ...widget, style: s });
+            }}
+          >
+            Auto
+          </button>
+        )}
       </div>
 
       <div className="pp-section">

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import type { BackgroundConfig, BackgroundOverlay } from "../types";
+import { PALETTES, SCENE_PRESETS, STATIC_PRESETS } from "./scene-presets";
 
 interface Props {
   background: BackgroundConfig;
@@ -11,23 +12,19 @@ interface Props {
   onClose: () => void;
 }
 
-const PRESETS: { label: string; bg: BackgroundConfig }[] = [
-  { label: "Solid Black", bg: { type: "solid", color: "#000000" } },
-  { label: "Dark Gradient", bg: { type: "animated-gradient", colors: ["#000000", "#0A0015", "#000A14"], speed: 8 } },
-  { label: "Ember Particles", bg: { type: "particles", color: "#FF6B35", count: 40, speed: 0.5 } },
-  { label: "Cyan Particles", bg: { type: "particles", color: "#00E5FF", count: 30, speed: 0.3 } },
-  { label: "Purple Haze", bg: { type: "animated-gradient", colors: ["#000000", "#1a0030", "#000020"], speed: 12 } },
-  { label: "Synthwave", bg: { type: "animated-gradient", colors: ["#0d0221", "#3d0066", "#ff00c8"], speed: 10 } },
-  { label: "Vaporwave", bg: { type: "animated-gradient", colors: ["#ff71ce", "#b967ff", "#05ffa1"], speed: 14 } },
-  { label: "Neon City", bg: { type: "particles", color: "#ff00ff", count: 50, speed: 0.4 } },
-  { label: "Deep Space", bg: { type: "particles", color: "#4040ff", count: 60, speed: 0.15 } },
-  { label: "Electric Storm", bg: { type: "particles", color: "#ffffff", count: 80, speed: 1.2 } },
-  { label: "Sunset Glow", bg: { type: "animated-gradient", colors: ["#0d0000", "#4a0030", "#ff6a00"], speed: 16 } },
-  { label: "Matrix Rain", bg: { type: "matrix", color: "#00ff41", speed: 1 } },
-];
+/** Background presets live in scene-presets.ts; the picker pairs a scene with a palette. */
 
 export function BackgroundPicker({ background, overlay, onChangeBackground, onChangeOverlay, onClose }: Props) {
   const [tab, setTab] = useState<"presets" | "custom" | "settings">("presets");
+  const activeScene = SCENE_PRESETS.find((sp) => sp.is(background)) ?? null;
+  const detected = activeScene ? activeScene.paletteOf(background) : -1;
+  const [paletteIdx, setPaletteIdx] = useState(detected >= 0 ? detected : 0);
+  const palette = PALETTES[paletteIdx].colors;
+
+  function choosePalette(i: number) {
+    setPaletteIdx(i);
+    if (activeScene) onChangeBackground(activeScene.make(PALETTES[i].colors));
+  }
   const [urlInput, setUrlInput] = useState("");
   const [opacity, setOpacity] = useState(
     ("opacity" in background ? (background as any).opacity : 1) ?? 1
@@ -104,15 +101,48 @@ export function BackgroundPicker({ background, overlay, onChangeBackground, onCh
       <div className="bp-content">
         {tab === "presets" && (
           <div className="bp-presets">
-            {PRESETS.map((p, i) => (
-              <button
-                key={i}
-                className={`bp-preset-btn ${JSON.stringify(background) === JSON.stringify(p.bg) ? "active" : ""}`}
-                onClick={() => onChangeBackground(p.bg)}
-              >
-                {p.label}
-              </button>
-            ))}
+            <div className="bp-scene-name">Palette</div>
+            <div className="bp-swatches">
+              {PALETTES.map((pal, i) => (
+                <button
+                  key={pal.name}
+                  className={`bp-swatch ${i === paletteIdx ? "active" : ""}`}
+                  title={pal.name}
+                  onClick={() => choosePalette(i)}
+                >
+                  <span style={{ background: pal.colors[0] }} />
+                  <span style={{ background: pal.colors[1] }} />
+                  <span style={{ background: pal.colors[2] }} />
+                </button>
+              ))}
+            </div>
+            <div className="bp-palette-name">{PALETTES[paletteIdx].name}</div>
+
+            <div className="bp-scene-name">Scenes</div>
+            <div className="bp-scene-list">
+              {SCENE_PRESETS.map((sp) => (
+                <button
+                  key={sp.label}
+                  className={`bp-preset-btn ${activeScene === sp ? "active" : ""}`}
+                  onClick={() => onChangeBackground(sp.make(palette))}
+                >
+                  {sp.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="bp-scene-name">Static</div>
+            <div className="bp-scene-list">
+              {STATIC_PRESETS.map((p) => (
+                <button
+                  key={p.label}
+                  className={`bp-preset-btn ${JSON.stringify(background) === JSON.stringify(p.bg) ? "active" : ""}`}
+                  onClick={() => onChangeBackground(p.bg)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

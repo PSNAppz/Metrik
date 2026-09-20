@@ -24,7 +24,7 @@ export function useIntegration(provider: string, pollIntervalMs = 60_000) {
     error: null,
     configured: false,
   });
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   const refresh = useCallback(async () => {
     try {
